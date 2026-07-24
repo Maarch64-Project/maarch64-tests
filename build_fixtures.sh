@@ -7,18 +7,44 @@ mkdir -p "$OUT_DIR"
 
 echo "[+] Building AArch64 test binary fixtures..."
 
-# 1. Minimal Assembly Hello World
-ASM_SRC="$SCRIPT_DIR/fixtures/asm/hello_asm.s"
-OUT_BIN="$OUT_DIR/hello_arm64"
-
-CC="aarch64-linux-gnu-gcc"
-
-if command -v $CC &> /dev/null; then
-    $CC -nostdlib -static "$ASM_SRC" -o "$OUT_BIN"
-    echo "[+] Successfully compiled $OUT_BIN using $CC"
-elif command -v clang &> /dev/null; then
-    clang --target=aarch64-linux-gnu -nostdlib -static "$ASM_SRC" -o "$OUT_BIN"
-    echo "[+] Successfully compiled $OUT_BIN using clang"
-else
-    echo "[-] Warning: No AArch64 cross compiler found (aarch64-linux-gnu-gcc or clang)."
+# 1. Compile Assembly Fixtures (*.s)
+if [ -d "$SCRIPT_DIR/fixtures/asm" ]; then
+    for src in "$SCRIPT_DIR/fixtures/asm"/*.s; do
+        if [ -f "$src" ]; then
+            name=$(basename "$src" .s)
+            out_bin="$OUT_DIR/${name}"
+            if command -v aarch64-linux-gnu-gcc &> /dev/null; then
+                aarch64-linux-gnu-gcc -nostdlib -static "$src" -o "$out_bin"
+                echo "  [ASM] Compiled $name -> tests/bin/${name}"
+            fi
+        fi
+    done
 fi
+
+# 2. Compile C Fixtures (*.c)
+if [ -d "$SCRIPT_DIR/fixtures/c" ]; then
+    for src in "$SCRIPT_DIR/fixtures/c"/*.c; do
+        if [ -f "$src" ]; then
+            name=$(basename "$src" .c)
+            out_bin="$OUT_DIR/${name}"
+            if command -v aarch64-linux-gnu-gcc &> /dev/null; then
+                aarch64-linux-gnu-gcc -nostdlib -static "$src" -o "$out_bin"
+                echo "  [C]   Compiled $name -> tests/bin/${name}"
+            fi
+        fi
+    done
+fi
+
+# 3. Compile Rust Fixtures (*.rs)
+if [ -d "$SCRIPT_DIR/fixtures/rust" ]; then
+    for src in "$SCRIPT_DIR/fixtures/rust"/*.rs; do
+        if [ -f "$src" ]; then
+            name=$(basename "$src" .rs)
+            out_bin="$OUT_DIR/${name}"
+            rustc --target aarch64-unknown-linux-gnu -C linker=aarch64-linux-gnu-gcc -C relocation-model=static -C link-args="-nostdlib -static -Wl,-Ttext=0x400000" -C panic=abort "$src" -o "$out_bin"
+            echo "  [Rust] Compiled $name -> tests/bin/${name}"
+        fi
+    done
+fi
+
+echo "[+] All test fixtures built successfully into tests/bin/"
