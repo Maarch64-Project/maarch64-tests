@@ -1,0 +1,7 @@
+[package]
+name = "maarch64-tests"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+maarch64-core = { path = "../core" }
