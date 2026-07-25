@@ -73,3 +73,11 @@ fn test_cmp_and_conditional_branch() {
     Interpreter::step(&mut ctx, &mut mem).unwrap();
     assert_eq!(ctx.pc, code_addr + 0xc);
 }
+
+#[test]
+fn test_ldrb_post_index() {
+    let inst = maarch64_core::decoder::Decoder::decode(0x38401402, 0x400dd8).unwrap();
+    println!("LDRB Inst: {:?}", inst);
+    let inst2 = maarch64_core::decoder::Decoder::decode(0xf94047f8, 0x4049d4).unwrap();
+    println!("0xf94047f8 Inst: {:?}", inst2);
+}
