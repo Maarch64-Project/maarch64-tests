@@ -5,4 +5,5 @@ edition.workspace = true
 
 [dependencies]
 maarch64-core = { path = "../core" }
+maarch64-thunks = { path = "../thunks" }
 unicorn-engine.workspace = true
