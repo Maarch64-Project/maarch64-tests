@@ -109,3 +109,30 @@ fn test_thunk_exit() {
     assert!(ctx.exited);
     assert_eq!(ctx.exit_code, 42);
 }
+
+#[test]
+fn test_thunk_strcmp() {
+    let mut mem = MemoryManager::new();
+    let mut ctx = CpuContext::new();
+    let mut thunks = ThunkManager::new();
+
+    let s1_addr: u64 = 0x500000;
+    let s2_addr: u64 = 0x501000;
+    mem.map_anonymous(s1_addr, 0x1000).unwrap();
+    mem.map_anonymous(s2_addr, 0x1000).unwrap();
+
+    mem.write(s1_addr, b"apple\0").unwrap();
+    mem.write(s2_addr, b"apple\0").unwrap();
+
+    let strcmp_addr: u64 = 0x900050;
+    let strcmp_fn = thunks.get_thunk("strcmp").unwrap();
+    thunks.register_thunk_address(strcmp_addr, strcmp_fn);
+
+    ctx.pc = strcmp_addr;
+    ctx.set_x(0, s1_addr);
+    ctx.set_x(1, s2_addr);
+    ctx.set_x(30, 0x400004);
+
+    Interpreter::step_with_thunk_lookup(&mut ctx, &mut mem, |addr| thunks.get_thunk_by_address(addr)).unwrap();
+    assert_eq!(ctx.get_x(0), 0);
+}
