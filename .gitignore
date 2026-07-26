@@ -1,4 +1,5 @@
 /bin/
+busybox-src/
 *.o
 *.so
 *.a
