@@ -129,3 +129,40 @@ fn test_dynamic_busybox_cat() {
     let res = run_busybox_applet("busybox_dynamic", "cat", Some("Cargo.toml"));
     assert!(res.is_ok(), "Dynamic BusyBox cat failed: {:?}", res);
 }
+
+#[test]
+fn test_static_busybox_uname() {
+    let res = run_busybox_applet("busybox", "uname", Some("-a"));
+    assert!(res.is_ok(), "Static BusyBox uname failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_uname() {
+    let res = run_busybox_applet("busybox_dynamic", "uname", Some("-a"));
+    assert!(res.is_ok(), "Dynamic BusyBox uname failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_env() {
+    let res = run_busybox_applet("busybox", "env", None);
+    assert!(res.is_ok(), "Static BusyBox env failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_env() {
+    let res = run_busybox_applet("busybox_dynamic", "env", None);
+    assert!(res.is_ok(), "Dynamic BusyBox env failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_head() {
+    let res = run_busybox_applet("busybox", "head", Some("Cargo.toml"));
+    assert!(res.is_ok(), "Static BusyBox head failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_head() {
+    let res = run_busybox_applet("busybox_dynamic", "head", Some("Cargo.toml"));
+    assert!(res.is_ok(), "Dynamic BusyBox head failed: {:?}", res);
+}
+
