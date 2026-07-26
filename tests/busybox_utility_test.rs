@@ -6,7 +6,7 @@ use maarch64_core::{
 };
 use std::path::PathBuf;
 
-fn run_busybox_applet(binary_name: &str, applet: &str) -> Result<u64, String> {
+fn run_busybox_applet(binary_name: &str, applet: &str, extra_arg: Option<&str>) -> Result<u64, String> {
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let bin_path = manifest_dir.join("bin").join(binary_name);
 
@@ -15,7 +15,11 @@ fn run_busybox_applet(binary_name: &str, applet: &str) -> Result<u64, String> {
     }
 
     let mut mem = MemoryManager::new();
-    let target_args = vec![binary_name, applet];
+    let mut target_args = vec![binary_name, applet];
+    if let Some(arg) = extra_arg {
+        target_args.push(arg);
+    }
+
     let loaded = ElfLoader::load_file_with_args(&bin_path, &target_args, &mut mem)
         .map_err(|e| e.to_string())?;
 
@@ -56,24 +60,72 @@ fn run_busybox_applet(binary_name: &str, applet: &str) -> Result<u64, String> {
 
 #[test]
 fn test_static_busybox_whoami() {
-    let res = run_busybox_applet("busybox", "whoami");
+    let res = run_busybox_applet("busybox", "whoami", None);
     assert!(res.is_ok(), "Static BusyBox whoami failed: {:?}", res);
 }
 
 #[test]
 fn test_dynamic_busybox_whoami() {
-    let res = run_busybox_applet("busybox_dynamic", "whoami");
+    let res = run_busybox_applet("busybox_dynamic", "whoami", None);
     assert!(res.is_ok(), "Dynamic BusyBox whoami failed: {:?}", res);
 }
 
 #[test]
 fn test_static_busybox_echo() {
-    let res = run_busybox_applet("busybox", "echo");
+    let res = run_busybox_applet("busybox", "echo", Some("hello"));
     assert!(res.is_ok(), "Static BusyBox echo failed: {:?}", res);
 }
 
 #[test]
 fn test_dynamic_busybox_echo() {
-    let res = run_busybox_applet("busybox_dynamic", "echo");
+    let res = run_busybox_applet("busybox_dynamic", "echo", Some("hello"));
     assert!(res.is_ok(), "Dynamic BusyBox echo failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_ls() {
+    let res = run_busybox_applet("busybox", "ls", None);
+    assert!(res.is_ok(), "Static BusyBox ls failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_ls() {
+    let res = run_busybox_applet("busybox_dynamic", "ls", None);
+    assert!(res.is_ok(), "Dynamic BusyBox ls failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_pwd() {
+    let res = run_busybox_applet("busybox", "pwd", None);
+    assert!(res.is_ok(), "Static BusyBox pwd failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_pwd() {
+    let res = run_busybox_applet("busybox_dynamic", "pwd", None);
+    assert!(res.is_ok(), "Dynamic BusyBox pwd failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_id() {
+    let res = run_busybox_applet("busybox", "id", None);
+    assert!(res.is_ok(), "Static BusyBox id failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_id() {
+    let res = run_busybox_applet("busybox_dynamic", "id", None);
+    assert!(res.is_ok(), "Dynamic BusyBox id failed: {:?}", res);
+}
+
+#[test]
+fn test_static_busybox_cat() {
+    let res = run_busybox_applet("busybox", "cat", Some("Cargo.toml"));
+    assert!(res.is_ok(), "Static BusyBox cat failed: {:?}", res);
+}
+
+#[test]
+fn test_dynamic_busybox_cat() {
+    let res = run_busybox_applet("busybox_dynamic", "cat", Some("Cargo.toml"));
+    assert!(res.is_ok(), "Dynamic BusyBox cat failed: {:?}", res);
 }
