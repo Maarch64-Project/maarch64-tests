@@ -1,0 +1,63 @@
+use maarch64_core::{
+    cpu::CpuContext,
+    interp::Interpreter,
+    loader::ElfLoader,
+    memory::MemoryManager,
+};
+use std::path::PathBuf;
+
+#[test]
+fn test_rust_grep_execution() {
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let bin_path = manifest_dir.join("bin").join("rust_grep");
+    let cargo_toml_path = manifest_dir.join("Cargo.toml");
+
+    if !bin_path.exists() || !cargo_toml_path.exists() {
+        return; // Skip if precompiled binary is not present in environment
+    }
+
+    let cargo_toml_str = cargo_toml_path.to_str().unwrap();
+    let mut mem = MemoryManager::new();
+    let target_args = vec!["rust_grep", "members", cargo_toml_str];
+    let loaded = ElfLoader::load_file_with_args(&bin_path, &target_args, &mut mem)
+        .expect("Failed to load rust_grep ELF");
+
+    let mut ctx = CpuContext::new();
+    ctx.pc = loaded.entry_point;
+    ctx.sp = loaded.stack_pointer;
+
+    let mut thunk_manager = maarch64_thunks::ThunkManager::new();
+    for (addr, name) in &loaded.dynamic_thunks {
+        thunk_manager.resolve_dynamic_symbol(name, *addr);
+    }
+
+    let mut inst_count: u64 = 0;
+    loop {
+        inst_count += 1;
+        assert!(inst_count < 10_000_000, "rust_grep execution exceeded instruction limit");
+
+        if let Some(thunk) = thunk_manager.get_thunk_by_address(ctx.pc) {
+            let entry_pc = ctx.pc;
+            thunk(&mut ctx, &mut mem).expect("Thunk execution failed");
+            if ctx.exited {
+                break;
+            }
+            if ctx.pc == entry_pc {
+                ctx.pc = ctx.get_x(30);
+            }
+            continue;
+        }
+
+        match Interpreter::step(&mut ctx, &mut mem) {
+            Ok(true) => {},
+            Ok(false) => break,
+            Err(e) => panic!("Interpreter error in rust_grep: {:?}", e),
+        }
+
+        if ctx.exited {
+            break;
+        }
+    }
+
+    assert_eq!(ctx.exit_code, 0, "rust_grep exited with non-zero status");
+}
