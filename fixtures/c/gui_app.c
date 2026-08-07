@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 typedef void* EGLDisplay;
 typedef int EGLBoolean;
@@ -44,5 +45,6 @@ int main(void) {
     glClear(0x4000);
     
     printf("\n[SUCCESS] GUI Window & GPU Render Pipeline Initialized Perfectly!\n");
+    sleep(3);
     return 0;
 }
