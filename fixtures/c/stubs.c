@@ -36,3 +36,15 @@ void XCreateGC(void) {}
 void XSetForeground(void) {}
 void XFillRectangle(void) {}
 void XStoreName(void) {}
+
+void pa_simple_new(void) {}
+void pa_simple_write(void) {}
+void pa_simple_drain(void) {}
+void pa_simple_free(void) {}
+
+void snd_pcm_open(void) {}
+void snd_pcm_set_params(void) {}
+void snd_pcm_writei(void) {}
+void snd_pcm_prepare(void) {}
+void snd_pcm_drain(void) {}
+void snd_pcm_close(void) {}
