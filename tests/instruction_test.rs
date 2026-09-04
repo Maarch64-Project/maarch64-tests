@@ -45,6 +45,19 @@ fn test_stack_stp_ldp_execution() {
 }
 
 #[test]
+fn test_adrp_execution() {
+    let mut ctx = CpuContext::new();
+    let mut mem = MemoryManager::new();
+    let code_addr = 0x6aad3c8;
+    mem.map_anonymous(code_addr & !0xfff, 0x1000).unwrap();
+    ctx.pc = code_addr;
+    let ins = 0x5ea1b800u32; // fcvtzs s0, s0
+    mem.write(code_addr, &ins.to_le_bytes()).unwrap();
+    let decoded = maarch64_core::decoder::Decoder::decode(ins, ctx.pc).unwrap();
+    println!("Decoded SIMD FCVTZS: {:?}", decoded);
+}
+
+#[test]
 fn test_cmp_and_conditional_branch() {
     let mut ctx = CpuContext::new();
     let mut mem = MemoryManager::new();

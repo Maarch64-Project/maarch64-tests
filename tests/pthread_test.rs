@@ -30,13 +30,13 @@ fn test_pthread_multithreading_syscalls() {
     let res98 = LinuxSyscall::handle(&mut ctx, &mut mem);
     assert_eq!(res98.unwrap(), 1);
 
-    // 3. Test Syscall clone (56) with CLONE_THREAD
+    // 3. Test Syscall clone (220) with CLONE_THREAD
     let stack_addr: u64 = 0x7f007000;
     let tls_addr: u64 = 0x7f008000;
     mem.map_anonymous(stack_addr, 0x1000).unwrap();
     mem.map_anonymous(tls_addr, 0x1000).unwrap();
 
-    ctx.set_x(8, 56);
+    ctx.set_x(8, 220);
     ctx.set_x(0, 0x00010000 | 0x00000100); // CLONE_THREAD | CLONE_VM
     ctx.set_x(1, stack_addr + 0x1000);    // SP
     ctx.set_x(2, 0);                      // ptid

@@ -7,3 +7,4 @@ edition.workspace = true
 maarch64-core = { path = "../core" }
 maarch64-thunks = { path = "../thunks" }
 unicorn-engine.workspace = true
+zip = "2.1"
